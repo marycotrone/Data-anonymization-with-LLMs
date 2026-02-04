@@ -1,0 +1,176 @@
+# ============================================
+# Configuration for Data Anonymization with LLMs
+# ============================================
+# This file controls all parameters of the pipeline.
+# Change models and datasets here to replicate experiments.
+
+# === DATASET SETTINGS ===
+dataset:
+  # Paths relative to 'data/' directory
+  train: "dataset_train_original.csv"
+  validation: "dataset_validation_original.csv"
+  test: "dataset_test_original.csv"
+  
+  # Dataset columns
+  text_column: "text"
+  label_column: "label"
+  
+  # Sample sizes for quick testing (null = use all)
+  # Set these for faster experimentation
+  sample_sizes:
+    train: null      # e.g., 1000 for quick test
+    validation: null # e.g., 500 for quick test
+    test: null
+
+# === EDA SETTINGS ===
+# Easy Data Augmentation: word-level transformations
+eda:
+  # Alpha parameters (0.0 to 1.0)
+  # Higher = more aggressive transformation
+  alpha_sr: 0.4  # Synonym Replacement
+  alpha_ri: 0.35  # Random Insertion
+  alpha_rs: 0.3  # Random Swap
+  alpha_rd: 0.3  # Random Deletion
+  
+  # Seed for reproducibility
+  seed: 42
+
+# === KNEO SETTINGS ===
+# Knowledge-based Neighbor Operation: embedding-based substitution
+kneo:
+  # Embedding model (download via gensim)
+  # Options:
+  #   - "glove-wiki-gigaword-50"   (small, fast)
+  #   - "glove-wiki-gigaword-100"
+  #   - "glove-wiki-gigaword-200"
+  #   - "glove-wiki-gigaword-300"  (best for accuracy)
+  #   - "fasttext-wiki-news-subwords-300" (best for noisy text/typos)
+  embedding_model: "glove-wiki-gigaword-300"
+  
+  # Number of neighbors to consider
+  k: 5
+  
+  # Selection strategy: "random" or "first"
+  strategy: "random"
+  
+  # Seed for reproducibility
+  seed: 42
+
+# === LLM SETTINGS (OLLAMA) ===
+# LLM-based anonymization via Ollama local server
+llm:
+  # Ollama model name
+  # Popular options:
+  #   - "gemma2:2b"     (small, fast)
+  #   - "gemma2:9b"     (better quality)
+  #   - "llama3.2"      (Meta's latest)
+  #   - "llama3.2:3b"   (smaller variant)
+  #   - "mistral"       (good balance)
+  #   - "phi3"          (Microsoft, efficient)
+  #   - "qwen2.5:7b"    (Alibaba)
+  model_name: "gemma2:2b"
+  
+  # Ollama server URL
+  base_url: "http://localhost:11434"
+  
+  # Generation parameters
+  temperature: 0.4    # Lower = more deterministic
+  top_p: 0.9          # Nucleus sampling
+  max_tokens: 256     # Max output length
+  
+  # Prompt style: "paraphrase", "simple", or "strict"
+  prompt_style: "paraphrase"
+  
+  # Custom prompts (optional, override defaults)
+  # Leave as null to use built-in templates
+  system_prompt: null
+  user_prompt_template: null
+
+# === METRICS SETTINGS ===
+metrics:
+  # SBERT model for cosine similarity
+  # Options:
+  #   - "all-MiniLM-L6-v2"        (fast, good)
+  #   - "intfloat/e5-large-v2"    (best quality)
+  #   - "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+  sbert_model: "intfloat/e5-large-v2"
+  
+  # Spacy model for NER
+  # Run: python -m spacy download en_core_web_sm
+  spacy_model: "en_core_web_sm"
+
+# === SENTIMENT CLASSIFIER SETTINGS ===
+# Three-class sentiment classifier (negative, neutral, positive)
+sentiment_classifier:
+  # Hugging Face model for fine-tuning
+  # Options:
+  #   - "cardiffnlp/twitter-roberta-base-sentiment-latest" (recommended)
+  #   - "distilbert-base-uncased"
+  #   - "bert-base-uncased"
+  model_name: "cardiffnlp/twitter-roberta-base-sentiment-latest"
+  
+  # Data preprocessing
+  max_len: 80           # Maximum sequence length
+  
+  # Training hyperparameters
+  batch_size: 64        # Batch size for training
+  epochs: 10            # Maximum number of epochs
+  learning_rate: 2e-5   # Initial learning rate
+  warmup_ratio: 0.1     # Proportion of training for warmup (10%)
+  
+  # Regularization
+  dropout: 0.2          # Hidden layer dropout
+  att_dropout: 0.2      # Attention dropout
+  weight_decay: 0.1     # L2 regularization
+  label_smoothing: 0.1  # Label smoothing factor
+  clip_value: 1.0       # Gradient clipping threshold
+  
+  # Model architecture
+  freeze_layers: 4      # Number of early transformer layers to freeze
+  
+  # Early stopping
+  patience: 2           # Epochs to wait before early stopping
+  
+  # NER: entity labels to consider
+  ner_target_labels:
+    - "PERSON"
+    - "GPE"
+    - "ORG"
+    - "LOC"
+  
+  # NER: strict mode (checks individual words in multi-word entities)
+  ner_strict_mode: true
+
+# === OUTPUT SETTINGS ===
+output:
+  # Results directory (relative to project root)
+  results_dir: "results"
+  
+  # Save anonymized datasets
+  save_anonymized: true
+  
+  # Save metrics to JSON
+  save_metrics: true
+  
+  # Output format: "csv" or "json"
+  format: "csv"
+
+# === GENERAL SETTINGS ===
+general:
+  # Show progress bars
+  show_progress: true
+  
+  # Global seed
+  seed: 42
+  
+  # Verbose output
+  verbose: true
+  
+  # Number of examples to show
+  n_examples: 5
+  
+  # Verbosity
+  verbose: true
+  
+  # Number of examples to print
+  n_examples: 5
