@@ -20,14 +20,8 @@ class EDAAnonymizer:
     # Punctuation marks not to swap
     PUNCTUATION_MARKS: Set[str] = {'!', '?', '"', '.', ',', ';', '(', ')', ':'}
     
-    def __init__(self, seed: int = 42):
-        """
-        Initialize the EDA anonymizer.
-        
-        Args:
-            seed: Seed for reproducibility
-        """
-        random.seed(seed)
+    def __init__(self):
+        """Initialize the EDA anonymizer."""
         self.stop_words = set(stopwords.words('english'))
     
     def get_synonyms(self, word: str) -> List[str]:

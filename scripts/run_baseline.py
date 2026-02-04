@@ -24,7 +24,6 @@ from utils import (
     load_config, 
     load_all_datasets,
     create_output_dir,
-    set_all_seeds,
     save_anonymized_dataset,
     save_metrics,
     print_comparison_table
@@ -66,9 +65,6 @@ def main():
     print("📋 Loading configuration...")
     config = load_config(args.config)
     
-    # Set seeds for reproducibility
-    set_all_seeds(config["general"]["seed"])
-    
     # Load dataset
     print(f"\n Loading dataset: {args.dataset}...")
     sample_sizes = {args.dataset: args.sample} if args.sample else None
@@ -100,7 +96,7 @@ def main():
         print("EASY DATA AUGMENTATION (EDA)")
         print("="*60)
         
-        eda = EDAAnonymizer(seed=config["eda"]["seed"])
+        eda = EDAAnonymizer()
         
         anonymized_eda = eda.anonymize_batch(
             sentences,
@@ -135,7 +131,6 @@ def main():
         
         kneo = KNEOAnonymizer(
             embedding_model=config["kneo"]["embedding_model"],
-            seed=config["kneo"]["seed"],
             verbose=config["general"]["verbose"]
         )
         

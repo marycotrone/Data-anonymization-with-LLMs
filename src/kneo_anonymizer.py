@@ -20,7 +20,6 @@ class KNEOAnonymizer:
     def __init__(
         self,
         embedding_model: str = "glove-wiki-gigaword-300",
-        seed: int = 42,
         verbose: bool = True
     ):
         """
@@ -34,10 +33,8 @@ class KNEOAnonymizer:
                 - "glove-wiki-gigaword-200"
                 - "glove-wiki-gigaword-300"
                 - "fasttext-wiki-news-subwords-300"
-            seed: Seed for reproducibility
             verbose: Show loading messages
         """
-        random.seed(seed)
         self.stop_words = set(stopwords.words('english'))
         self.detokenizer = TreebankWordDetokenizer()
         self.neighbor_cache: Dict[str, List[str]] = {}

@@ -20,7 +20,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
 from sentiment_classifier import SentimentClassifier
-from utils import load_config, set_seed
+from utils import load_config
 from sklearn.utils.class_weight import compute_class_weight
 
 
@@ -111,8 +111,6 @@ def main():
                         help='Path to save the best model')
     parser.add_argument('--results-dir', type=str, default='results',
                         help='Directory to save results')
-    parser.add_argument('--seed', type=int, default=None,
-                        help='Random seed (overrides config)')
     
     args = parser.parse_args()
     
@@ -120,11 +118,6 @@ def main():
     print("Loading configuration...")
     config = load_config(args.config)
     classifier_config = config.get('sentiment_classifier', {})
-    
-    # Set random seed
-    seed = args.seed if args.seed is not None else config.get('random_seed', 42)
-    set_seed(seed)
-    print(f"Random seed set to: {seed}")
     
     # Load datasets
     print("\nLoading datasets...")

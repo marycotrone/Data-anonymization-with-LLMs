@@ -21,7 +21,6 @@ from utils import (
     load_config, 
     load_all_datasets, 
     create_output_dir,
-    set_all_seeds,
     save_anonymized_dataset,
     save_metrics
 )
@@ -67,9 +66,6 @@ def main():
     # Load configuration
     print("📋 Loading configuration...")
     config = load_config(args.config)
-    
-    # Set seeds
-    set_all_seeds(config["general"]["seed"])
     
     # Override model if specified
     model_name = args.model or config["llm"]["model_name"]
