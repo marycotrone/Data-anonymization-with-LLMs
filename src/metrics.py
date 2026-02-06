@@ -11,13 +11,16 @@ Includes metrics for:
 import re
 import numpy as np
 import torch
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 from nltk.tokenize import word_tokenize
 from nltk.metrics.distance import edit_distance
 from sentence_transformers import SentenceTransformer, util
 from sklearn.metrics.pairwise import cosine_similarity
 import spacy
 from tqdm.auto import tqdm
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
 
 
 class AnonymizationMetrics:
@@ -88,8 +91,25 @@ class AnonymizationMetrics:
         Returns:
             Average Levenshtein Ratio (0-1)
         """
-        total_ratio = 0
-        count = 0
+        scores = self.calculate_levenshtein_ratio_list(original_sentences, generated_sentences)
+        return np.mean(scores) if len(scores) > 0 else 0
+    
+    def calculate_levenshtein_ratio_list(
+        self,
+        original_sentences: List[str],
+        generated_sentences: List[str]
+    ) -> List[float]:
+        """
+        Calculate word-level Levenshtein Ratio for each sentence pair.
+        
+        Args:
+            original_sentences: Original sentences
+            generated_sentences: Generated sentences
+            
+        Returns:
+            List of Levenshtein Ratio scores (0-1) for each pair
+        """
+        scores = []
         
         for orig, gen in zip(original_sentences, generated_sentences):
             orig_tokens = word_tokenize(orig.lower())
@@ -97,22 +117,19 @@ class AnonymizationMetrics:
             
             # Handle special cases
             if not orig_tokens and not gen_tokens:
-                total_ratio += 1.0
-                count += 1
+                scores.append(1.0)
                 continue
             if not orig_tokens or not gen_tokens:
-                count += 1
+                scores.append(0.0)
                 continue
             
             # Calculate distance
             distance = edit_distance(orig_tokens, gen_tokens)
             max_len = max(len(orig_tokens), len(gen_tokens))
             ratio = 1.0 - (distance / max_len)
-            
-            total_ratio += ratio
-            count += 1
+            scores.append(ratio)
         
-        return total_ratio / count if count > 0 else 0
+        return scores
     
     def calculate_jaccard_similarity(
         self,
@@ -131,8 +148,25 @@ class AnonymizationMetrics:
         Returns:
             Average Jaccard Similarity (0-1)
         """
-        total_similarity = 0
-        count = 0
+        scores = self.calculate_jaccard_similarity_list(original_sentences, generated_sentences)
+        return np.mean(scores) if len(scores) > 0 else 0
+    
+    def calculate_jaccard_similarity_list(
+        self,
+        original_sentences: List[str],
+        generated_sentences: List[str]
+    ) -> List[float]:
+        """
+        Calculate Jaccard Similarity for each sentence pair.
+        
+        Args:
+            original_sentences: Original sentences
+            generated_sentences: Generated sentences
+            
+        Returns:
+            List of Jaccard Similarity scores (0-1) for each pair
+        """
+        scores = []
         
         for orig, gen in zip(original_sentences, generated_sentences):
             orig_set = set(word_tokenize(orig.lower()))
@@ -140,20 +174,18 @@ class AnonymizationMetrics:
             
             # Handle special cases
             if not orig_set and not gen_set:
-                total_similarity += 1.0
-                count += 1
+                scores.append(1.0)
                 continue
             if not orig_set or not gen_set:
-                count += 1
+                scores.append(0.0)
                 continue
             
             # Calculate Jaccard
             intersection = len(orig_set.intersection(gen_set))
             union = len(orig_set.union(gen_set))
-            total_similarity += intersection / union
-            count += 1
+            scores.append(intersection / union)
         
-        return total_similarity / count if count > 0 else 0
+        return scores
     
     def calculate_cosine_similarity(
         self,
@@ -174,6 +206,28 @@ class AnonymizationMetrics:
         Returns:
             Average Cosine Similarity (0-1)
         """
+        similarities = self.calculate_cosine_similarity_list(
+            original_sentences, generated_sentences, show_progress
+        )
+        return np.mean(similarities) if len(similarities) > 0 else 0
+    
+    def calculate_cosine_similarity_list(
+        self,
+        original_sentences: List[str],
+        generated_sentences: List[str],
+        show_progress: bool = True
+    ) -> np.ndarray:
+        """
+        Calculate Cosine Similarity for each sentence pair.
+        
+        Args:
+            original_sentences: Original sentences
+            generated_sentences: Generated sentences
+            show_progress: Show progress bar
+            
+        Returns:
+            Array of Cosine Similarity scores (0-1) for each pair
+        """
         if len(original_sentences) != len(generated_sentences):
             raise ValueError("Lists must have the same length")
         
@@ -187,10 +241,10 @@ class AnonymizationMetrics:
             show_progress_bar=show_progress
         )
         
-        # Calculate similarity
+        # Calculate similarity for each pair
         similarities = np.diag(cosine_similarity(orig_embeddings, gen_embeddings))
         
-        return np.mean(similarities) if similarities.size > 0 else 0
+        return similarities
     
     def calculate_ner_score(
         self,
@@ -214,11 +268,34 @@ class AnonymizationMetrics:
         Returns:
             Average NER Score (0-1)
         """
+        scores = self.calculate_ner_score_list(
+            original_sentences, generated_sentences, strict_mode, target_labels
+        )
+        return np.mean(scores) if len(scores) > 0 else 1.0
+    
+    def calculate_ner_score_list(
+        self,
+        original_sentences: List[str],
+        generated_sentences: List[str],
+        strict_mode: bool = True,
+        target_labels: List[str] = None
+    ) -> List[float]:
+        """
+        Calculate NER Score for each sentence pair.
+        
+        Args:
+            original_sentences: Original sentences
+            generated_sentences: Generated sentences
+            strict_mode: If True, check individual words in multi-word entities
+            target_labels: NER labels to consider (default: PERSON, GPE, ORG, LOC)
+            
+        Returns:
+            List of NER scores (0-1) for each pair
+        """
         if target_labels is None:
             target_labels = ["PERSON", "GPE", "ORG", "LOC"]
         
-        total_score = 0
-        count = 0
+        scores = []
         
         # Clean the texts
         orig_cleaned = [self.clean_text_for_ner(s) for s in original_sentences]
@@ -260,10 +337,9 @@ class AnonymizationMetrics:
                 
                 # Calculate score
                 score = 1.0 - (leaked_entities / len(orig_ents))
-                total_score += score
-                count += 1
+                scores.append(score)
         
-        return total_score / count if count > 0 else 1.0
+        return scores
     
     def evaluate_all(
         self,
@@ -417,3 +493,151 @@ class AnonymizationMetrics:
             print(f"{'='*60}\n")
         
         return metrics
+    
+    def plot_metric_distributions(
+        self,
+        scores_dict: Dict[str, List[float]],
+        metric_name: str,
+        color_palette: str = "viridis",
+        save_path: Optional[str] = None,
+        plot_type: str = "ridge"
+    ) -> None:
+        """
+        Plot distribution of metric scores across different datasets/configs.
+        
+        Two visualization types available:
+        - 'ridge': Ridge plot (stacked density plots)
+        - 'overlay': Overlapping histograms
+        
+        Args:
+            scores_dict: Dictionary mapping dataset labels to score lists
+                        Example: {"T=0.3 P=0.7": [0.8, 0.75, ...], ...}
+            metric_name: Name of the metric for the plot title
+            color_palette: Seaborn color palette name
+            save_path: Optional path to save the plot
+            plot_type: Type of plot ('ridge' or 'overlay')
+        """
+        if plot_type == "ridge":
+            self._plot_ridge(scores_dict, metric_name, color_palette, save_path)
+        elif plot_type == "overlay":
+            self._plot_overlay(scores_dict, metric_name, color_palette, save_path)
+        else:
+            raise ValueError(f"Unknown plot_type: {plot_type}. Use 'ridge' or 'overlay'.")
+    
+    def _plot_ridge(
+        self,
+        scores_dict: Dict[str, List[float]],
+        metric_name: str,
+        color_palette: str,
+        save_path: Optional[str]
+    ) -> None:
+        """
+        Create a ridge plot (stacked density plots) for metric distributions.
+        
+        Args:
+            scores_dict: Dictionary mapping labels to score lists
+            metric_name: Metric name for title
+            color_palette: Seaborn palette
+            save_path: Optional save path
+        """
+        # Prepare data
+        all_data = []
+        for label, scores in scores_dict.items():
+            if hasattr(scores, 'tolist'):
+                scores = scores.tolist()
+            for score in scores:
+                all_data.append({"Score": score, "Dataset": label})
+        
+        df_plot = pd.DataFrame(all_data)
+        
+        # Configure aesthetics
+        sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
+        
+        # Create FacetGrid
+        n_datasets = len(scores_dict.keys())
+        g = sns.FacetGrid(
+            df_plot, row="Dataset", hue="Dataset",
+            aspect=10, height=0.8, palette=color_palette
+        )
+        
+        # Draw density plots
+        g.map(sns.kdeplot, "Score", bw_adjust=0.5, clip_on=False, fill=True, alpha=0.7, linewidth=1.5)
+        g.map(sns.kdeplot, "Score", clip_on=False, color="w", lw=2, bw_adjust=0.5)
+        g.map(plt.axhline, y=0, lw=2, clip_on=False, color="grey", alpha=0.3)
+        
+        # Add labels
+        def label(x, color, label):
+            ax = plt.gca()
+            ax.text(0, 0.2, label, fontweight="bold", color=color,
+                   ha="left", va="center", transform=ax.transAxes)
+        
+        g.map(label, "Score")
+        
+        # Cleanup
+        g.set_titles("")
+        g.set(yticks=[], ylabel="")
+        g.despine(bottom=True, left=True)
+        
+        plt.subplots_adjust(hspace=-0.25)
+        g.fig.suptitle(f"Ridge Plot: {metric_name}", fontsize=16, fontweight='bold', y=0.98)
+        plt.xlabel("Score", fontsize=12)
+        
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            if self.verbose:
+                print(f"Plot saved: {save_path}")
+        
+        plt.show()
+    
+    def _plot_overlay(
+        self,
+        scores_dict: Dict[str, List[float]],
+        metric_name: str,
+        color_palette: str,
+        save_path: Optional[str]
+    ) -> None:
+        """
+        Create an overlapping histogram plot for metric distributions.
+        
+        Args:
+            scores_dict: Dictionary mapping labels to score lists
+            metric_name: Metric name for title
+            color_palette: Seaborn palette
+            save_path: Optional save path
+        """
+        # Prepare data
+        all_data = []
+        for label, scores in scores_dict.items():
+            if hasattr(scores, 'tolist'):
+                scores = scores.tolist()
+            for score in scores:
+                all_data.append({"Score": score, "Dataset": label})
+        
+        df_plot = pd.DataFrame(all_data)
+        
+        # Create plot
+        plt.figure(figsize=(10, 6))
+        
+        sns.histplot(
+            data=df_plot,
+            x="Score",
+            hue="Dataset",
+            kde=True,
+            element="step",
+            palette=color_palette,
+            bins=30,
+            alpha=0.5,
+            common_norm=False
+        )
+        
+        plt.title(f"Distribution Comparison: {metric_name}", fontsize=14, fontweight='bold')
+        plt.xlabel("Score", fontsize=12)
+        plt.ylabel("Frequency", fontsize=12)
+        plt.grid(True, alpha=0.3)
+        
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            if self.verbose:
+                print(f"Plot saved: {save_path}")
+        
+        plt.show()
