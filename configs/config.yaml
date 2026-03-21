@@ -78,7 +78,7 @@ llm:
   top_p: 0.9          # Nucleus sampling
   max_tokens: 256     # Max output length
   
-  # Prompt style: "paraphrase", "simple", or "strict"
+  # Prompt style: "paraphrase"
   prompt_style: "paraphrase"
   
   # Custom prompts (optional, override defaults)

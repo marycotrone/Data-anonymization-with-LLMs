@@ -28,7 +28,7 @@ python scripts/run_baseline.py --method kneo --dataset test --sample 100
 ```bash
 python scripts/run_llm.py --model gemma2:2b --dataset validation
 python scripts/run_llm.py --model llama3.2 --dataset train --sample 50
-python scripts/run_llm.py --model mistral --prompt-style strict
+python scripts/run_llm.py --model mistral --prompt-style paraphrase
 ```
 
 ## Retrieval Evaluation

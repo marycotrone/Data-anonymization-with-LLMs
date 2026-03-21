@@ -17,32 +17,11 @@ PROMPT_TEMPLATES = {
         "system": """Act as a data editor and privacy expert. Your PRIMARY task is to rephrase and anonymize the input sentence.
 1. REPHRASING: Rephrase sentences using different words keeping the same sentiment.
 2. STYLE PRESERVATION: You MUST KEEP the original style (informal, slang, punctuation). Do NOT make it formal.
-3. ANONYMIZATION: REPLACE EACH entity (People, Locations, Brands) with generic placeholders or alternatives.
-Output ONLY the rewritten sentence.""",
+3. ANONYMIZATION: REPLACE EACH entity (People, Locations, Brands) with generic placeholders or alternatives.""",
         "user": """Original: "{text}"
 Sentiment: {label}
-Task: Rewrite the sentence above. Ensure the output is grammatically correct and preserves the {label} sentiment.
+Task: Rewrite the sentence above. Ensure the output is grammatically correct and preserves the {label} label.
 Output ONLY the rewritten sentence."""
-    },
-    "simple": {
-        "system": """You are an expert in text anonymization. Your task is to anonymize the given text by replacing named entities (people, locations, organizations) with similar but different entities, while preserving the semantic meaning and structure of the text.""",
-        "user": """Anonymize the following text:
-
-"{text}"
-
-Return ONLY the anonymized text without any explanations."""
-    },
-    "strict": {
-        "system": """You are a privacy expert. Your ONLY task is to replace personal identifiable information (PII) in text.
-RULES:
-- Replace names of people with different names
-- Replace locations with different locations
-- Replace organization names with different ones
-- Keep the same sentence structure
-- Do NOT add explanations""",
-        "user": """Text to anonymize: "{text}"
-
-Anonymized text:"""
     }
 }
 
@@ -71,7 +50,7 @@ class OllamaAnonymizer:
             temperature: Generation temperature (0.0-1.0)
             top_p: Nucleus sampling parameter (0.0-1.0)
             max_tokens: Maximum number of output tokens
-            prompt_style: Prompt style ("paraphrase", "simple", "strict")
+            prompt_style: Prompt style ("paraphrase")
             system_prompt: Custom system prompt (override)
             user_prompt_template: Custom user template (override)
             verbose: Show status messages
@@ -89,8 +68,8 @@ class OllamaAnonymizer:
             self.system_prompt = system_prompt or template["system"]
             self.user_prompt_template = user_prompt_template or template["user"]
         else:
-            self.system_prompt = system_prompt or PROMPT_TEMPLATES["simple"]["system"]
-            self.user_prompt_template = user_prompt_template or PROMPT_TEMPLATES["simple"]["user"]
+            self.system_prompt = system_prompt or PROMPT_TEMPLATES["paraphrase"]["system"]
+            self.user_prompt_template = user_prompt_template or PROMPT_TEMPLATES["paraphrase"]["user"]
         
         # Check connection
         if self.verbose:
@@ -110,7 +89,7 @@ class OllamaAnonymizer:
                 model_names = [m["name"] for m in models]
                 
                 if self.verbose:
-                    print(f"✅ Connected to Ollama ({self.base_url})")
+                    print(f" Connected to Ollama ({self.base_url})")
                     print(f"   Available models: {', '.join(model_names[:5])}" + 
                           ("..." if len(model_names) > 5 else ""))
                 
@@ -119,23 +98,23 @@ class OllamaAnonymizer:
                 available = any(model_base in m for m in model_names)
                 
                 if not available:
-                    print(f"⚠️  Model '{self.model_name}' not found")
+                    print(f"  Model '{self.model_name}' not found")
                     print(f"   Download with: ollama pull {self.model_name}")
                 else:
                     print(f"   Selected model: {self.model_name}")
                 
                 return True
             else:
-                print(f"❌ Ollama connection error: {response.status_code}")
+                print(f"Ollama connection error: {response.status_code}")
                 return False
         
         except requests.exceptions.ConnectionError:
-            print("❌ Unable to connect to Ollama")
+            print("Unable to connect to Ollama")
             print(f"   Make sure Ollama is running on {self.base_url}")
             print("   Start with: ollama serve")
             return False
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"Error: {e}")
             return False
     
     def _clean_response(self, text: str) -> str:
@@ -214,7 +193,7 @@ class OllamaAnonymizer:
                 "temperature": self.temperature,
                 "num_predict": self.max_tokens,
                 "top_p": self.top_p,
-                "repeat_penalty": 1.1
+                "repeat_penalty": 1.2
             }
         }
         
@@ -228,17 +207,17 @@ class OllamaAnonymizer:
                     return self._clean_response(raw_response)
                 else:
                     if self.verbose:
-                        print(f"⚠️  API error (attempt {attempt + 1}/{retry}): {response.status_code}")
+                        print(f"API error (attempt {attempt + 1}/{retry}): {response.status_code}")
                     time.sleep(2 ** attempt)  # Exponential backoff
             
             except requests.exceptions.Timeout:
                 if self.verbose:
-                    print(f"⚠️  Timeout (attempt {attempt + 1}/{retry})")
+                    print(f"Timeout (attempt {attempt + 1}/{retry})")
                 time.sleep(2 ** attempt)
             
             except Exception as e:
                 if self.verbose:
-                    print(f"⚠️  Error (attempt {attempt + 1}/{retry}): {e}")
+                    print(f"Error (attempt {attempt + 1}/{retry}): {e}")
                 time.sleep(2 ** attempt)
         
         return None
@@ -355,7 +334,7 @@ class OllamaAnonymizer:
         """
         self.model_name = model_name
         if self.verbose:
-            print(f"📦 Model changed to: {model_name}")
+            print(f"Model changed to: {model_name}")
             self._check_connection()
     
     def set_temperature(self, temperature: float) -> None:
@@ -367,7 +346,7 @@ class OllamaAnonymizer:
         """
         self.temperature = max(0.0, min(1.0, temperature))
         if self.verbose:
-            print(f"🌡️  Temperature set to: {self.temperature}")
+            print(f"Temperature set to: {self.temperature}")
 
 
 def create_anonymizer_from_config(config: Dict[str, Any]) -> OllamaAnonymizer:

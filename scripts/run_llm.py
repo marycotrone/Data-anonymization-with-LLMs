@@ -56,7 +56,7 @@ def main():
     parser.add_argument(
         "--prompt-style",
         type=str,
-        choices=["paraphrase", "simple", "strict"],
+        choices=["paraphrase"],
         default="paraphrase",
         help="Prompt style to use"
     )

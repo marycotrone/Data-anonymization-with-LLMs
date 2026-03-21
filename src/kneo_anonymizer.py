@@ -1,7 +1,7 @@
 """
-Knowledge-based NEighbor Operation (KNEO) for text anonymization.
+KNEO for text anonymization.
 
-This module implements KNEO using embeddings (GloVe, fastText) to 
+This module implements KNEO using embeddings (GloVe) to 
 replace words with semantic neighbors.
 """
 
@@ -47,9 +47,9 @@ class KNEOAnonymizer:
         try:
             self.model = api.load(embedding_model)
             if self.verbose:
-                print("✅ Model loaded successfully")
+                print("Model loaded successfully")
         except Exception as e:
-            print(f"❌ Error loading model: {e}")
+            print(f"Error loading model: {e}")
             self.model = None
     
     def get_neighbors(
@@ -100,37 +100,44 @@ class KNEOAnonymizer:
         self,
         sentence: str,
         k: int = 10,
+        alpha: float = 1.0,
         strategy: str = "random"
     ) -> str:
         """
         Anonymize a single sentence.
-        
+
         Args:
             sentence: Sentence to anonymize
             k: Number of neighbors to consider
+            alpha: Fraction of eligible words to replace (0.0-1.0, default 1.0 = all)
             strategy: Selection strategy ("random" or "first")
-            
+
         Returns:
             Anonymized sentence
         """
         if self.model is None:
             raise ValueError("Embedding model not loaded")
-        
+
         words = word_tokenize(sentence)
         if not words:
             return sentence
-        
+
         new_words = list(words)
-        
+
         # Find words to replace (in vocabulary and not stopwords)
         vocab_words_indices = [
             i for i, word in enumerate(words)
             if word in self.model and word.lower() not in self.stop_words
         ]
-        
+
         if not vocab_words_indices:
             return sentence
-        
+
+        # Apply alpha: select a fraction of eligible words to replace
+        if alpha < 1.0:
+            n_replace = max(1, int(round(len(vocab_words_indices) * alpha)))
+            vocab_words_indices = random.sample(vocab_words_indices, n_replace)
+
         # Replace the words
         for i in vocab_words_indices:
             original_word = words[i]
@@ -155,29 +162,31 @@ class KNEOAnonymizer:
         self,
         sentences: List[str],
         k: int = 10,
+        alpha: float = 1.0,
         strategy: str = "random",
         show_progress: bool = True
     ) -> List[str]:
         """
         Anonymize a batch of sentences.
-        
+
         Args:
             sentences: List of sentences to anonymize
             k: Number of neighbors to consider
+            alpha: Fraction of eligible words to replace (0.0-1.0, default 1.0 = all)
             strategy: Selection strategy ("random" or "first")
             show_progress: Show progress bar
-            
+
         Returns:
             List of anonymized sentences
         """
         if self.model is None:
             raise ValueError("Embedding model not loaded")
-        
+
         anonymized = []
         iterator = tqdm(sentences, desc="KNEO Anonymization") if show_progress else sentences
-        
+
         for sentence in iterator:
-            anonymized_sentence = self.anonymize(sentence, k=k, strategy=strategy)
+            anonymized_sentence = self.anonymize(sentence, k=k, alpha=alpha, strategy=strategy)
             anonymized.append(anonymized_sentence)
         
         return anonymized
