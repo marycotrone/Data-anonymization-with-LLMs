@@ -12,6 +12,7 @@ from .eda_anonymizer import EDAAnonymizer
 from .kneo_anonymizer import KNEOAnonymizer
 from .llm_anonymizer import OllamaAnonymizer, create_anonymizer_from_config, PROMPT_TEMPLATES
 from .metrics import AnonymizationMetrics
+from .retrieval_evaluator import RetrievalEvaluator
 from .utils import (
     load_config,
     load_dataset,
@@ -37,6 +38,7 @@ __all__ = [
     
     # Metrics
     "AnonymizationMetrics",
+    "RetrievalEvaluator",
     
     # Utils
     "load_config",
