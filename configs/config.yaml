@@ -25,66 +25,48 @@ dataset:
 # === EDA SETTINGS ===
 # Easy Data Augmentation: word-level transformations
 eda:
-  # Alpha parameters (0.0 to 1.0)
-  # Higher = more aggressive transformation
-  alpha_sr: 0.4  # Synonym Replacement
-  alpha_ri: 0.35  # Random Insertion
-  alpha_rs: 0.3  # Random Swap
-  alpha_rd: 0.3  # Random Deletion
-  
-  # Seed for reproducibility
   seed: 42
+  # Experiment configurations (IDs 1-7)
+  configs:
+    - {id: 1,  alpha_sr: 0.2, alpha_rs: 0.1, alpha_ri: 0.2, alpha_rd: 0.1}
+    - {id: 2,  alpha_sr: 0.2, alpha_rs: 0.2, alpha_ri: 0.2, alpha_rd: 0.2}
+    - {id: 3,  alpha_sr: 0.3, alpha_rs: 0.2, alpha_ri: 0.3, alpha_rd: 0.2}
+    - {id: 4,  alpha_sr: 0.3, alpha_rs: 0.3, alpha_ri: 0.3, alpha_rd: 0.3}
+    - {id: 5,  alpha_sr: 0.4, alpha_rs: 0.3, alpha_ri: 0.4, alpha_rd: 0.3}
+    - {id: 6,  alpha_sr: 0.4, alpha_rs: 0.4, alpha_ri: 0.4, alpha_rd: 0.4}
+    - {id: 7,  alpha_sr: 0.5, alpha_rs: 0.5, alpha_ri: 0.5, alpha_rd: 0.5}
 
 # === KNEO SETTINGS ===
 # Knowledge-based Neighbor Operation: embedding-based substitution
 kneo:
-  # Embedding model (download via gensim)
-  # Options:
-  #   - "glove-wiki-gigaword-50"   (small, fast)
-  #   - "glove-wiki-gigaword-100"
-  #   - "glove-wiki-gigaword-200"
-  #   - "glove-wiki-gigaword-300"  (best for accuracy)
-  #   - "fasttext-wiki-news-subwords-300" (best for noisy text/typos)
   embedding_model: "glove-wiki-gigaword-300"
-  
-  # Number of neighbors to consider
-  k: 5
-  
-  # Selection strategy: "random" or "first"
   strategy: "random"
-  
-  # Seed for reproducibility
   seed: 42
+  # Experiment configurations (IDs 8-15)
+  configs:
+    - {id: 8,  k: 3, alpha: 0.3}
+    - {id: 9,  k: 5, alpha: 0.3}
+    - {id: 10, k: 3, alpha: 0.5}
+    - {id: 11, k: 5, alpha: 0.5}
+    - {id: 12, k: 3, alpha: 0.7}
+    - {id: 13, k: 5, alpha: 0.7}
+    - {id: 14, k: 3, alpha: 1.0}
+    - {id: 15, k: 5, alpha: 1.0}
 
 # === LLM SETTINGS (OLLAMA) ===
 # LLM-based anonymization via Ollama local server
 llm:
-  # Ollama model name
-  # Popular options:
-  #   - "gemma2:2b"     (small, fast)
-  #   - "gemma2:9b"     (better quality)
-  #   - "llama3.2"      (Meta's latest)
-  #   - "llama3.2:3b"   (smaller variant)
-  #   - "mistral"       (good balance)
-  #   - "phi3"          (Microsoft, efficient)
-  #   - "qwen2.5:7b"    (Alibaba)
-  model_name: "gemma2:2b"
-  
-  # Ollama server URL
   base_url: "http://localhost:11434"
-  
-  # Generation parameters
-  temperature: 0.4    # Lower = more deterministic
-  top_p: 0.9          # Nucleus sampling
-  max_tokens: 256     # Max output length
-  
-  # Prompt style: "paraphrase"
+  max_tokens: 256
   prompt_style: "paraphrase"
-  
-  # Custom prompts (optional, override defaults)
-  # Leave as null to use built-in templates
   system_prompt: null
   user_prompt_template: null
+  # Experiment configurations (IDs 16-19)
+  configs:
+    - {id: 16, model: "gemma2:2b",    temperature: 0.4, top_p: 0.9}
+    - {id: 17, model: "gemma2:2b",    temperature: 0.7, top_p: 0.9}
+    - {id: 18, model: "llama3.1:8b",  temperature: 0.4, top_p: 0.9}
+    - {id: 19, model: "llama3.1:8b",  temperature: 0.7, top_p: 0.9}
 
 # === METRICS SETTINGS ===
 metrics:

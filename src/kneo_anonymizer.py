@@ -45,6 +45,8 @@ class KNEOAnonymizer:
             print(f"Loading embedding model: {embedding_model}...")
         
         try:
+            if self.verbose:
+                print(f"Downloading/loading '{embedding_model}' (~800MB on first run, please wait)...")
             self.model = api.load(embedding_model)
             if self.verbose:
                 print("Model loaded successfully")

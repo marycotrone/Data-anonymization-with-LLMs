@@ -21,6 +21,7 @@ transformers>=4.35.0
 
 # === TEXT PROCESSING ===
 emoji>=2.8.0
+rapidfuzz>=3.0.0
 
 # === HTTP CLIENT (for Ollama) ===
 requests>=2.31.0

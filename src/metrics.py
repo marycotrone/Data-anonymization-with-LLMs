@@ -176,11 +176,6 @@ class AnonymizationMetrics:
             "cosine_similarity":  self.calculate_cosine_similarity(original_sentences, generated_sentences, show_progress),
             "ner_score":          self.calculate_ner_score(original_sentences, generated_sentences),
         }
-        if self.verbose:
-            print(f"  Levenshtein (↓): {results['levenshtein_ratio']:.4f}")
-            print(f"  Jaccard     (↓): {results['jaccard_similarity']:.4f}")
-            print(f"  Cosine      (↑): {results['cosine_similarity']:.4f}")
-            print(f"  NER Score   (↑): {results['ner_score']:.4f}")
         return results
 
     def plot_metric_distributions(
@@ -251,7 +246,7 @@ class AnonymizationMetrics:
         g.map(sns.kdeplot, "Score", bw_adjust=0.6, clip_on=False, color="w", lw=2)
         g.map(plt.axhline, y=0, lw=1, clip_on=False, color="grey", alpha=0.2)
 
-        def _label(x, color, label):  # noqa: ARG001
+        def _label(*_, label, **__):
             ax = plt.gca()
             ax.text(0, 0.1, label, fontweight="bold", color="black",
                     ha="left", va="center", transform=ax.transAxes)
@@ -262,7 +257,7 @@ class AnonymizationMetrics:
         g.despine(bottom=True, left=True)
 
         plt.subplots_adjust(hspace=-0.8)
-        g.fig.suptitle(f"Ridge Plot: {metric_name}", fontsize=18, fontweight='bold', y=0.98)
+        g.figure.suptitle(f"Ridge Plot: {metric_name}", fontsize=18, fontweight='bold', y=0.98)
         plt.xlabel("Score", fontsize=14)
 
         out = save_path or f"{metric_name.replace(' ', '_')}.png"

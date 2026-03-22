@@ -230,8 +230,18 @@ def save_metrics(
     filename = f"metrics_{method_name}_{timestamp}.json"
     filepath = output_path / filename
     
+    import numpy as np
+
+    class _NumpyEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, (np.floating, np.integer)):
+                return obj.item()
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+            return super().default(obj)
+
     with open(filepath, 'w') as f:
-        json.dump(metrics, f, indent=2)
+        json.dump(metrics, f, indent=2, cls=_NumpyEncoder)
     
     print(f"💾 Metrics saved: {filepath}")
     return filepath
