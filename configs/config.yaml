@@ -18,8 +18,8 @@ dataset:
   # Sample sizes for quick testing (null = use all)
   # Set these for faster experimentation
   sample_sizes:
-    train: null      # e.g., 1000 for quick test
-    validation: null # e.g., 500 for quick test
+    train: null      
+    validation: null 
     test: null
 
 # === EDA SETTINGS ===
