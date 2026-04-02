@@ -247,6 +247,40 @@ def save_metrics(
     return filepath
 
 
+def get_descriptive_name(name: str, config: Dict[str, Any]) -> str:
+    """
+    Generate descriptive filename with technique and parameters.
+
+    Args:
+        name: Configuration name (e.g., 'EDA_1', 'KNEO_8', 'GEMMA_16')
+        config: Loaded configuration dictionary
+
+    Returns:
+        Descriptive name string (e.g., 'eda_sr0.2_rs0.1_ri0.2_rd0.1')
+    """
+    if name.startswith('EDA_'):
+        cfg_id = int(name.split('_')[1])
+        cfg = next(c for c in config['eda']['configs'] if c['id'] == cfg_id)
+        return f"eda_sr{cfg['alpha_sr']}_rs{cfg['alpha_rs']}_ri{cfg['alpha_ri']}_rd{cfg['alpha_rd']}"
+
+    elif name.startswith('KNEO_'):
+        cfg_id = int(name.split('_')[1])
+        cfg = next(c for c in config['kneo']['configs'] if c['id'] == cfg_id)
+        return f"kneo_k{cfg['k']}_alpha{cfg['alpha']}"
+
+    elif name.startswith('GEMMA_'):
+        cfg_id = int(name.split('_')[1])
+        cfg = next(c for c in config['llm']['configs'] if c['id'] == cfg_id)
+        return f"gemma_temp{cfg['temperature']}_topp{cfg['top_p']}"
+
+    elif name.startswith('LLAMA_'):
+        cfg_id = int(name.split('_')[1])
+        cfg = next(c for c in config['llm']['configs'] if c['id'] == cfg_id)
+        return f"llama_temp{cfg['temperature']}_topp{cfg['top_p']}"
+
+    return name.lower()
+
+
 def print_comparison_table(results: Dict[str, Dict[str, float]]) -> None:
     """
     Print a comparative table of results.
