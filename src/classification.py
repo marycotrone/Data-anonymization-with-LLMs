@@ -216,7 +216,7 @@ def train_kfold_ensemble(dataset_name, texts, labels, label_map, num_classes,
     texts_array    = np.array(texts)
 
     class_weights   = compute_class_weight('balanced',
-                                           classes=np.unique(numeric_labels),
+                                           classes=np.arange(num_classes),
                                            y=numeric_labels)
     weights_tensor  = torch.tensor(class_weights, dtype=torch.float).to(device)
     criterion       = torch.nn.CrossEntropyLoss(weight=weights_tensor,
@@ -251,7 +251,7 @@ def train_kfold_ensemble(dataset_name, texts, labels, label_map, num_classes,
             num_training_steps=total_steps
         )
 
-        best_f1 = 0
+        best_f1 = -1
         patience_counter = 0
 
         for epoch in range(cfg['epochs']):
@@ -361,7 +361,7 @@ def evaluate_all_datasets(classification_datasets, test_texts, test_labels,
                                         label_map, num_classes, tokenizer, cfg)
         if preds is not None:
             all_test_results[name] = {
-                'predictions': preds,
+                'predictions': preds.tolist() if hasattr(preds, 'tolist') else list(preds),
                 'accuracy':    accuracy_score(trues, preds),
                 'f1_macro':    f1_score(trues, preds, average='macro'),
                 'f1_weighted': f1_score(trues, preds, average='weighted'),
@@ -411,30 +411,28 @@ def _get_bar_color(name):
     return 'gray'
 
 
-def plot_classification_comparison(all_test_results, save_path=None):
-    """Bar charts: Accuracy and F1 Macro for each dataset."""
+def plot_classification_comparison(all_test_results, f1_weighted_scores, save_path=None):
+    """Bar charts: Accuracy, F1 Macro, and F1 Weighted for each dataset."""
     df = pd.DataFrame([
-        {'Dataset': n, 'Accuracy': r['accuracy'], 'F1 Macro': r['f1_macro']}
+        {'Dataset': n, 'Accuracy': r['accuracy'], 'F1 Macro': r['f1_macro'],
+         'F1 Weighted': f1_weighted_scores[n]}
         for n, r in all_test_results.items()
+        if n in f1_weighted_scores
     ]).sort_values('F1 Macro', ascending=False)
 
-    colors   = [_get_bar_color(d) for d in df['Dataset']]
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    colors = [_get_bar_color(d) for d in df['Dataset']]
+    fig, ax = plt.subplots(figsize=(10, 5))
 
-    for ax, col, title in zip(axes,
-                               ['Accuracy', 'F1 Macro'],
-                               ['Classification Accuracy on Test Set',
-                                'F1 Macro Score on Test Set']):
-        bars = ax.bar(df['Dataset'], df[col], color=colors, alpha=0.8, edgecolor='black')
-        ax.set_title(title, fontsize=12, fontweight='bold')
-        ax.set_ylabel(col, fontsize=11)
-        ax.set_ylim(0, 1)
-        ax.grid(axis='y', alpha=0.3)
-        ax.set_xticklabels(df['Dataset'], rotation=45, ha='right', fontsize=8)
-        for bar in bars:
-            h = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2., h + 0.01,
-                    f'{h:.3f}', ha='center', va='bottom', fontsize=8)
+    bars = ax.bar(df['Dataset'], df['F1 Weighted'], color=colors, alpha=0.8, edgecolor='black')
+    ax.set_title('F1 Weighted Score on Test Set', fontsize=12, fontweight='bold')
+    ax.set_ylabel('F1 Weighted', fontsize=11)
+    ax.set_ylim(0, 1)
+    ax.grid(axis='y', alpha=0.3)
+    ax.set_xticklabels(df['Dataset'], rotation=45, ha='right', fontsize=8)
+    for bar in bars:
+        h = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width() / 2., h + 0.01,
+                f'{h:.3f}', ha='center', va='bottom', fontsize=8)
 
     plt.tight_layout()
     out = save_path or "../results/classification_comparison.png"

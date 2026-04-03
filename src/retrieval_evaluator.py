@@ -1,13 +1,3 @@
-"""
-Privacy Attack Evaluation through Retrieval Methods
-
-This module provides a unified interface for evaluating privacy protection
-using three different retrieval attack methods:
-- SBERT: Semantic similarity using sentence embeddings
-- Jaccard: Word-level set similarity
-- Levenshtein: Character-level edit distance
-"""
-
 import re
 import numpy as np
 import torch
@@ -94,8 +84,8 @@ class RetrievalEvaluator:
         
         # Calculate retrieval accuracy
         correct_counts = {k: 0 for k in k_values}
-        max_k = max(k_values)
         total = len(paraphrased_sentences)
+        max_k = min(max(k_values), len(original_sentences))
         
         iterator = tqdm(range(total), desc="SBERT Retrieval", leave=False) if show_progress else range(total)
         
@@ -140,8 +130,8 @@ class RetrievalEvaluator:
         
         total = len(paraphrased_sentences)
         correct_counts = {k: 0 for k in k_values}
-        max_k = max(k_values)
-        
+        max_k = min(max(k_values), len(original_sentences))
+
         iterator = tqdm(paraphrased_sentences, desc="Jaccard Retrieval", leave=False) if show_progress else paraphrased_sentences
         
         for i, para_sentence in enumerate(iterator):
@@ -210,8 +200,8 @@ class RetrievalEvaluator:
         
         total = len(para_list)
         correct_counts = {k: 0 for k in k_values}
-        max_k = max(k_values)
-        
+        max_k = min(max(k_values), len(orig_list))
+
         iterator = tqdm(para_list, desc="Levenshtein Retrieval", leave=False) if show_progress else para_list
         
         for i, query in enumerate(iterator):

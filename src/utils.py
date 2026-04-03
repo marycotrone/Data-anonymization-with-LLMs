@@ -198,8 +198,7 @@ def save_anonymized_dataset(
         'label': labels
     })
     
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"anonymized_{method_name}_{timestamp}.csv"
+    filename = f"anonymized_{method_name}.csv"
     filepath = output_path / filename
     
     df.to_csv(filepath, index=False)
