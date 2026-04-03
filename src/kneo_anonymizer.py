@@ -1,10 +1,3 @@
-"""
-KNEO for text anonymization.
-
-This module implements KNEO using embeddings (GloVe) to 
-replace words with semantic neighbors.
-"""
-
 import random
 from typing import List, Dict, Optional, Tuple
 import gensim.downloader as api

@@ -1,13 +1,3 @@
-"""
-Data Anonymization with LLMs
-
-Modular framework for text anonymization using:
-- EDA (Easy Data Augmentation)
-- KNEO (Knowledge-based NEighbor Operation)
-- LLM (Large Language Models via Ollama)
-
-"""
-
 from .eda_anonymizer import EDAAnonymizer
 from .kneo_anonymizer import KNEOAnonymizer
 from .llm_anonymizer import OllamaAnonymizer, create_anonymizer_from_config, PROMPT_TEMPLATES

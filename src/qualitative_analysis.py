@@ -1,8 +1,3 @@
-"""
-Qualitative Analysis for Anonymized Text
-Evaluates readability, complexity, and fluency across anonymization configurations.
-"""
-
 import warnings
 import numpy as np
 import pandas as pd
@@ -52,7 +47,7 @@ def calculate_readability(df_qual):
     df_qual[['flesch_reading_ease', 'flesch_kincaid_grade']] = (
         df_qual['text'].progress_apply(lambda x: pd.Series(_calc(x)))
     )
-    print("✅ Readability metrics calculated.")
+    print("Readability metrics calculated.")
     return df_qual
 
 
@@ -105,7 +100,7 @@ def calculate_perplexity(df_qual, batch_size=8):
 
     df_qual['perplexity']     = ppl_values
     df_qual['log_perplexity'] = np.log(df_qual['perplexity'])
-    print("✅ Perplexity calculated.")
+    print("Perplexity calculated.")
     return df_qual
 
 
@@ -233,5 +228,5 @@ def run_qualitative_analysis(original_texts, all_anonymized,
                           x_limit=(0, 10),
                           save_path=f"{results_dir}/ridge_fluency.png")
 
-    print("\n✅ Qualitative analysis completed!")
+    print("\nQualitative analysis completed!")
     return df_qual

@@ -1,7 +1,3 @@
-"""
-Utilities for managing project configuration and data loading.
-"""
-
 import os
 import random
 import yaml
@@ -35,7 +31,7 @@ def set_all_seeds(seed: int = 42) -> None:
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
     
-    print(f"✅ Seed set to {seed}. Results are reproducible.")
+    print(f"Seed set to {seed}. Results are reproducible.")
 
 
 def load_config(config_path: str = "configs/config.yaml") -> Dict[str, Any]:
@@ -156,9 +152,9 @@ def load_all_datasets(
             
             texts, labels = load_dataset(path, text_col, label_col, sample_size)
             datasets[split_name] = (texts, labels)
-            print(f"✅ Loaded {split_name}: {len(texts)} samples")
+            print(f"Loaded {split_name}: {len(texts)} samples")
         else:
-            print(f"⚠️  File not found: {path}")
+            print(f"File not found: {path}")
     
     return datasets
 
@@ -202,7 +198,7 @@ def save_anonymized_dataset(
     filepath = output_path / filename
     
     df.to_csv(filepath, index=False)
-    print(f"💾 Saved: {filepath}")
+    print(f"Saved: {filepath}")
     
     return filepath
 
@@ -242,7 +238,7 @@ def save_metrics(
     with open(filepath, 'w') as f:
         json.dump(metrics, f, indent=2, cls=_NumpyEncoder)
     
-    print(f"💾 Metrics saved: {filepath}")
+    print(f"Metrics saved: {filepath}")
     return filepath
 
 

@@ -37,12 +37,12 @@ class RetrievalEvaluator:
             self.rapidfuzz_available = True
         except ImportError:
             if self.verbose:
-                print("⚠️  rapidfuzz not installed. Levenshtein retrieval will not be available.")
+                print("rapidfuzz not installed. Levenshtein retrieval will not be available.")
                 print("   Install with: pip install rapidfuzz")
             self.rapidfuzz_available = False
         
         if self.verbose:
-            print("✅ RetrievalEvaluator initialized")
+            print("RetrievalEvaluator initialized")
     
     def evaluate_sbert_retrieval(
         self,
@@ -185,8 +185,6 @@ class RetrievalEvaluator:
             print("\n" + "="*70)
             print("LEVENSHTEIN RETRIEVAL (Character-level Edit Distance)")
             print("="*70)
-            print("⚠️  Note: This method is computationally intensive.\n")
-        
         def clean_text(text):
             """Remove punctuation and convert to lowercase"""
             text = str(text).lower()
@@ -270,7 +268,7 @@ class RetrievalEvaluator:
         if "levenshtein" in methods:
             if not self.rapidfuzz_available:
                 if self.verbose:
-                    print("\n⚠️  Skipping Levenshtein retrieval (rapidfuzz not installed)")
+                    print("\nSkipping Levenshtein retrieval (rapidfuzz not installed)")
             else:
                 results["Levenshtein"] = self.evaluate_levenshtein_retrieval(
                     original_sentences, paraphrased_sentences, k_values, show_progress

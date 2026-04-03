@@ -1,10 +1,3 @@
-"""
-Sentiment Classifier Module
-
-This module implements a three-class sentiment classifier (negative, neutral, positive)
-based on fine-tuned BERT models from Hugging Face Transformers.
-"""
-
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader

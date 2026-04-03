@@ -1,12 +1,3 @@
-"""
-Classification Task Evaluation
-Trains a sentiment classifier on each anonymized dataset to evaluate
-how different anonymization methods affect downstream task performance.
-
-Model: Twitter-RoBERTa-base (cardiffnlp/twitter-roberta-base-2022-154m)
-Method: K-Fold Cross-Validation with Ensemble (Soft Voting)
-"""
-
 import csv
 import gc
 import random
@@ -43,7 +34,7 @@ warnings.filterwarnings('ignore')
 # ---------------------------------------------------------------------------
 
 DEFAULT_CONFIG = dict(
-    model_name     = "cardiffnlp/twitter-roberta-base-2022-154m",
+    model_name     = "cardiffnlp/twitter-roberta-base-sentiment-latest",
     max_len        = 80,
     batch_size     = 32,
     epochs         = 5,
@@ -338,9 +329,9 @@ def ensemble_predict(dataset_name, test_texts, test_labels, label_map, num_class
             all_logits.append(torch.cat(fold_logits, dim=0))
             del model
             torch.cuda.empty_cache()
-            print(f"  Fold {fold+1} loaded ✅")
+            print(f"  Fold {fold+1} loaded ")
         except FileNotFoundError:
-            print(f"  ⚠️  Model not found: {model_path}")
+            print(f"Model not found: {model_path}")
 
     if not all_logits:
         print(f"No models found for {dataset_name}")
@@ -368,7 +359,7 @@ def evaluate_all_datasets(classification_datasets, test_texts, test_labels,
             }
             print(f"\n{name}  Accuracy: {all_test_results[name]['accuracy']:.4f}  "
                   f"F1 Macro: {all_test_results[name]['f1_macro']:.4f}")
-    print("\n✅ Test set evaluation completed")
+    print("\nTest set evaluation completed")
     return all_test_results
 
 

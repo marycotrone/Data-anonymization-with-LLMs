@@ -1,9 +1,3 @@
-"""
-LLM-based anonymizer using Ollama.
-
-Supports various models: gemma2, llama3, mistral, phi3, etc.
-"""
-
 import re
 import requests
 from typing import List, Optional, Dict, Any

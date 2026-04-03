@@ -1,13 +1,3 @@
-"""
-Easy Data Augmentation (EDA) for text anonymization.
-
-This module implements the four EDA techniques:
-- Synonym Replacement (SR): Replace words with synonyms
-- Random Insertion (RI): Randomly insert synonyms
-- Random Swap (RS): Randomly swap words
-- Random Deletion (RD): Randomly delete words
-"""
-
 import random
 from typing import List, Set
 from nltk.corpus import wordnet, stopwords

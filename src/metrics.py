@@ -1,12 +1,3 @@
-"""
-Evaluation metrics for text anonymization.
-
-Metrics:
-- Irreversibility: Levenshtein Ratio, Jaccard Similarity
-- Utility: Cosine Similarity (SBERT)
-- Anonymization: NER Score
-"""
-
 import re
 import numpy as np
 from typing import List, Dict, Optional
