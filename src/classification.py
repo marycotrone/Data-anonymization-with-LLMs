@@ -377,26 +377,32 @@ def evaluate_all_datasets(classification_datasets, test_texts, test_labels,
 # ---------------------------------------------------------------------------
 
 def print_results_table(all_test_results):
-    """Print sorted results table and performance retention vs Original."""
+    """Print results table ordered by method group: EDA, KNEO, GEMMA, LLAMA."""
+    def method_order(name):
+        name_up = name.upper()
+        if name_up.startswith('EDA'):
+            return 0
+        if name_up.startswith('KNEO'):
+            return 1
+        if name_up.startswith('GEMMA'):
+            return 2
+        if name_up.startswith('LLAMA'):
+            return 3
+        return 4
+
     rows = [
-        {'Dataset': name, 'Accuracy': r['accuracy'],
-         'F1 Macro': r['f1_macro'], 'F1 Weighted': r['f1_weighted']}
+        {'Dataset': name, 'F1 Weighted': r['f1_weighted']}
         for name, r in all_test_results.items()
     ]
-    df = pd.DataFrame(rows).sort_values('F1 Macro', ascending=False)
+    df = pd.DataFrame(rows)
+    df['_order'] = df['Dataset'].map(method_order)
+    df = df.sort_values('_order').drop(columns='_order').reset_index(drop=True)
     print("\n" + "="*70 + "\nCLASSIFICATION RESULTS ON TEST SET\n" + "="*70)
     try:
         from IPython.display import display
         display(df.round(4))
     except Exception:
         print(df.round(4).to_string(index=False))
-
-    if 'Original' in all_test_results:
-        orig_f1 = all_test_results['Original']['f1_macro']
-        print("\nPerformance Retention (vs Original):")
-        for name, r in all_test_results.items():
-            if name != 'Original':
-                print(f"  {name:20s}: {r['f1_macro']/orig_f1*100:.2f}%")
     return df
 
 
@@ -412,27 +418,33 @@ def _get_bar_color(name):
 
 
 def plot_classification_comparison(all_test_results, f1_weighted_scores, save_path=None):
-    """Bar charts: Accuracy, F1 Macro, and F1 Weighted for each dataset."""
+    """Bar charts: F1 Weighted for each dataset, ordered by method group."""
+    def method_order(name):
+        n = name.upper()
+        if n == 'ORIGINAL':    return 0
+        if n.startswith('EDA'):   return 1
+        if n.startswith('KNEO'):  return 2
+        if n.startswith('GEMMA'): return 3
+        if n.startswith('LLAMA'): return 4
+        return 5
+
     df = pd.DataFrame([
-        {'Dataset': n, 'Accuracy': r['accuracy'], 'F1 Macro': r['f1_macro'],
-         'F1 Weighted': f1_weighted_scores[n]}
+        {'Dataset': n, 'F1 Weighted': f1_weighted_scores[n]}
         for n, r in all_test_results.items()
         if n in f1_weighted_scores
-    ]).sort_values('F1 Macro', ascending=False)
+    ])
+    df['_order'] = df['Dataset'].map(method_order)
+    df = df.sort_values('_order').drop(columns='_order').reset_index(drop=True)
 
     colors = [_get_bar_color(d) for d in df['Dataset']]
     fig, ax = plt.subplots(figsize=(10, 5))
 
-    bars = ax.bar(df['Dataset'], df['F1 Weighted'], color=colors, alpha=0.8, edgecolor='black')
+    ax.bar(df['Dataset'], df['F1 Weighted'], color=colors, alpha=0.8, edgecolor='black')
     ax.set_title('F1 Weighted Score on Test Set', fontsize=12, fontweight='bold')
     ax.set_ylabel('F1 Weighted', fontsize=11)
     ax.set_ylim(0, 1)
     ax.grid(axis='y', alpha=0.3)
     ax.set_xticklabels(df['Dataset'], rotation=45, ha='right', fontsize=8)
-    for bar in bars:
-        h = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width() / 2., h + 0.01,
-                f'{h:.3f}', ha='center', va='bottom', fontsize=8)
 
     plt.tight_layout()
     out = save_path or "../results/classification_comparison.png"
