@@ -18,9 +18,9 @@ dataset:
   # Sample sizes for quick testing (null = use all)
   # Set these for faster experimentation
   sample_sizes:
-    train: null      
-    validation: null 
-    test: null
+    train: 15      
+    validation: 15 
+    test: 15
 
 # === EDA SETTINGS ===
 # Easy Data Augmentation: word-level transformations
