@@ -134,7 +134,7 @@ def _get_model(num_labels, cfg, device):
     model_cfg.hidden_dropout_prob             = cfg['dropout']
     model_cfg.attention_probs_dropout_prob    = cfg['dropout']
     model = AutoModelForSequenceClassification.from_pretrained(
-        cfg['model_name'], config=model_cfg
+        cfg['model_name'], config=model_cfg, ignore_mismatched_sizes=True
     )
     for name, param in model.named_parameters():
         if "encoder.layer" in name or "transformer.layer" in name:
