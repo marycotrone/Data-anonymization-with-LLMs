@@ -8,7 +8,8 @@ import time
 # Template di prompt predefiniti
 PROMPT_TEMPLATES = {
     "paraphrase": {
-        "system": """Act as a data editor and privacy expert. Your PRIMARY task is to rephrase and anonymize the input sentence.
+    "system": """Act as a data editor and privacy expert. Your PRIMARY task is to rephrase and anonymize the input sentence.
+
 1. REPHRASING: Rephrase sentences using different words keeping the same sentiment.
 2. STYLE PRESERVATION: You MUST KEEP the original style (informal, slang, punctuation). Do NOT make it formal.
 3. ANONYMIZATION: REPLACE EACH entity (People, Locations, Brands) with generic placeholders or alternatives.""",
@@ -16,7 +17,24 @@ PROMPT_TEMPLATES = {
 Sentiment: {label}
 Task: Rewrite the sentence above. Ensure the output is grammatically correct and preserves the {label} label.
 Output ONLY the rewritten sentence."""
-    }
+    },
+    "obfuscate": {
+    "system": """You are a data anonymization expert specialized in privacy-preserving dataset generation.
+
+Your goal is to rewrite an input text respecting the following properties:
+1. LEXICAL OBFUSCATION: The rewritten text shares as few content words as possible with the original. Avoid synonyms that share the same root. Use entirely different vocabulary, metaphors, and phrasings.
+2. STRUCTURAL OBFUSCATION: Use a different sentence structure (e.g. change voice, clause order, narrative perspective) so the rewrite is syntactically distant from the original.
+3. CLASS SIGNAL PRESERVATION: Identify which features of the text signal its label in the given classification task (infer the task from the label name). Preserve ONLY those discriminative features in the rewrite, everything else should be discarded and rebuilt from scratch.
+4. STYLE PRESERVATION: Match the register of the original (informal, colloquial, use of slang or punctuation patterns). Do not make it more formal or more polished.
+5. ENTITY ANONYMIZATION: Replace all named entities (people, locations, brands, usernames, mentions, hashtags) with plausible generic alternatives that fit the class and style.""",
+
+    "user": """Text: "{text}"
+Label: {label}
+
+This text belongs to a categorical classification dataset. The label "{label}" defines its class.
+Rewrite the text from scratch following the system instructions. Use entirely different words and sentence structure. Preserve the class signal and the original style. Remove all identifying entities.
+Output ONLY the rewritten text."""
+}
 }
 
 
