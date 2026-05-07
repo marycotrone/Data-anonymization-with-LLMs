@@ -1,25 +1,21 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
-# Load and select relevant columns
-df = pd.read_csv("edos_labelled_aggregated.csv", usecols=["text", "label_sexist"])
+# Load relevant columns (include "split" to partition rows)
+df = pd.read_csv("edos_labelled_aggregated.csv", usecols=["text", "label_sexist", "split"])
 
 # Rename and remap labels
 df = df.rename(columns={"label_sexist": "label"})
 df["label"] = df["label"].map({"sexist": "SEXIST", "not sexist": "NOT_SEXIST"})
+df = df[["label", "text", "split"]]
 
-# Shuffle
-df = df.sample(frac=1, random_state=42).reset_index(drop=True)
+# Split according to the "split" column
+mapping = {
+    "train": "dataset_train_original.csv",
+    "dev":   "dataset_validation_original.csv",
+    "test":  "dataset_test_original.csv",
+}
 
-# Split into train (33%), val (33%), test (33%)
-train, temp = train_test_split(df, test_size=0.66, random_state=42)
-val, test = train_test_split(temp, test_size=0.50, random_state=42)
-
-# Save
-train.to_csv("dataset_train_original.csv", index=False)
-val.to_csv("dataset_validation_original.csv", index=False)
-test.to_csv("dataset_test_original.csv", index=False)
-
-print(f"Train: {len(train)} rows")
-print(f"Val:   {len(val)} rows")
-print(f"Test:  {len(test)} rows")
+for split_name, filename in mapping.items():
+    subset = df[df["split"] == split_name][["label", "text"]]
+    subset.sample(frac=1, random_state=42).reset_index(drop=True).to_csv(filename, index=False)
+    print(f"{split_name}: {len(subset)} rows -> {filename}")
