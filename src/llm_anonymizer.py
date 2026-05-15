@@ -49,20 +49,24 @@ class OllamaAnonymizer:
         top_p: float = 0.9,
         max_tokens: int = 256,
         prompt_style: str = "paraphrase",
+        think: Optional[bool] = None,
         system_prompt: Optional[str] = None,
         user_prompt_template: Optional[str] = None,
         verbose: bool = True
     ):
         """
         Initialize the anonymizer with Ollama.
-        
+
         Args:
             model_name: Ollama model name (gemma2:2b, llama3.2, mistral, phi3, etc.)
             base_url: Ollama server URL
             temperature: Generation temperature (0.0-1.0)
             top_p: Nucleus sampling parameter (0.0-1.0)
             max_tokens: Maximum number of output tokens
-            prompt_style: Prompt style ("paraphrase")
+            prompt_style: Prompt style ("paraphrase" or "obfuscate")
+            think: Whether to enable extended thinking for reasoning models
+                   (False = disable, True = enable, None = let model decide).
+                   Non-reasoning models (gemma3, mixtral, …) ignore this parameter.
             system_prompt: Custom system prompt (override)
             user_prompt_template: Custom user template (override)
             verbose: Show status messages
@@ -72,6 +76,7 @@ class OllamaAnonymizer:
         self.temperature = temperature
         self.top_p = top_p
         self.max_tokens = max_tokens
+        self.think = think
         self.verbose = verbose
         
         # Setup prompts
@@ -141,7 +146,12 @@ class OllamaAnonymizer:
         """
         if not text:
             return ""
-        
+
+        # Strip thinking blocks emitted by reasoning models (e.g. Qwen3, DeepSeek-R1)
+        text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+        if not text:
+            return ""
+
         # Remove common courtesy phrases
         garbage_phrases = [
             "Let me know if you have another example",
@@ -208,6 +218,8 @@ class OllamaAnonymizer:
                 "repeat_penalty": 1.2
             }
         }
+        if self.think is not None:
+            payload["think"] = self.think
         
         for attempt in range(retry):
             try:
@@ -290,7 +302,7 @@ class OllamaAnonymizer:
             
             if result is None or result.strip() == "":
                 if skip_on_error:
-                    anonymized.append(sentence)  # Keep original
+                    anonymized.append("EMPTY_OUTPUT")
                 else:
                     anonymized.append("")
             else:
@@ -378,6 +390,8 @@ def create_anonymizer_from_config(config: Dict[str, Any]) -> OllamaAnonymizer:
         base_url=llm_config.get("base_url", "http://localhost:11434"),
         temperature=llm_config.get("temperature", 0.4),
         max_tokens=llm_config.get("max_tokens", 256),
+        prompt_style=llm_config.get("prompt_style", "paraphrase"),
+        think=llm_config.get("think"),
         system_prompt=llm_config.get("system_prompt"),
         user_prompt_template=llm_config.get("user_prompt_template"),
         verbose=config.get("general", {}).get("show_progress", True)

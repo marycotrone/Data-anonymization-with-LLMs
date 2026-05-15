@@ -57,8 +57,13 @@ kneo:
 # LLM-based anonymization via Ollama local server
 llm:
   base_url: "http://localhost:11434"
-  max_tokens: 256
-  prompt_style: "paraphrase"
+  max_tokens: 1024
+  prompt_style: "obfuscate"
+  # think: controls extended reasoning for models that support it (qwen3, deepseek-r1, …)
+  # Set to false to disable thinking (faster, recommended for anonymization tasks).
+  # Set to null or omit to let the model use its default behaviour.
+  # Non-reasoning models (gemma3, mixtral, llama, …) ignore this parameter entirely.
+  think: false
   system_prompt: null
   user_prompt_template: null
   # Experiment configurations (IDs 16-19)
@@ -89,7 +94,8 @@ sentiment_classifier:
   #   - "cardiffnlp/twitter-roberta-base-sentiment-latest" (recommended)
   #   - "distilbert-base-uncased"
   #   - "bert-base-uncased"
-  model_name: "cardiffnlp/twitter-roberta-base-sentiment-latest"
+  #   - "cardiffnlp/twitter-roberta-base"
+  model_name: "cardiffnlp/twitter-roberta-base"
   
   # Data preprocessing
   max_len: 80           # Maximum sequence length

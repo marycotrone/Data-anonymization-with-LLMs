@@ -263,15 +263,10 @@ def get_descriptive_name(name: str, config: Dict[str, Any]) -> str:
         cfg = next(c for c in config['kneo']['configs'] if c['id'] == cfg_id)
         return f"kneo_k{cfg['k']}_alpha{cfg['alpha']}"
 
-    elif name.startswith('GEMMA_'):
+    elif name.startswith('LLM_'):
         cfg_id = int(name.split('_')[1])
         cfg = next(c for c in config['llm']['configs'] if c['id'] == cfg_id)
-        return f"gemma_temp{cfg['temperature']}_topp{cfg['top_p']}"
-
-    elif name.startswith('LLAMA_'):
-        cfg_id = int(name.split('_')[1])
-        cfg = next(c for c in config['llm']['configs'] if c['id'] == cfg_id)
-        return f"llama_temp{cfg['temperature']}_topp{cfg['top_p']}"
+        return f"llm_temp{cfg['temperature']}_topp{cfg['top_p']}"
 
     return name.lower()
 

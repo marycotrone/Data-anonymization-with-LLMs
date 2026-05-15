@@ -375,11 +375,9 @@ def print_results_table(all_test_results):
             return 0
         if name_up.startswith('KNEO'):
             return 1
-        if name_up.startswith('GEMMA'):
+        if name_up.startswith('LLM'):
             return 2
-        if name_up.startswith('LLAMA'):
-            return 3
-        return 4
+        return 3
 
     rows = [
         {'Dataset': name, 'F1 Weighted': r['f1_weighted']}
@@ -401,10 +399,9 @@ def _get_bar_color(name):
     """Per-group colors consistent with the qualitative palette."""
     n = name.upper()
     if n == 'ORIGINAL':  return 'hotpink'
-    if n.startswith('EDA'):   return '#c0392b'
-    if n.startswith('KNEO'):  return '#2980b9'
-    if n.startswith('GEMMA'): return '#27ae60'
-    if n.startswith('LLAMA'): return '#8e44ad'
+    if n.startswith('EDA'):  return '#c0392b'
+    if n.startswith('KNEO'): return '#2980b9'
+    if n.startswith('LLM'):  return '#27ae60'
     return 'gray'
 
 
@@ -412,12 +409,11 @@ def plot_classification_comparison(all_test_results, f1_weighted_scores, save_pa
     """Bar charts: F1 Weighted for each dataset, ordered by method group."""
     def method_order(name):
         n = name.upper()
-        if n == 'ORIGINAL':    return 0
-        if n.startswith('EDA'):   return 1
-        if n.startswith('KNEO'):  return 2
-        if n.startswith('GEMMA'): return 3
-        if n.startswith('LLAMA'): return 4
-        return 5
+        if n == 'ORIGINAL':   return 0
+        if n.startswith('EDA'):  return 1
+        if n.startswith('KNEO'): return 2
+        if n.startswith('LLM'):  return 3
+        return 4
 
     df = pd.DataFrame([
         {'Dataset': n, 'F1 Weighted': f1_weighted_scores[n]}
