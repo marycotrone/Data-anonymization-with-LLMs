@@ -34,6 +34,23 @@ Label: {label}
 This text belongs to a categorical classification dataset. The label "{label}" defines its class.
 Rewrite the text from scratch following the system instructions. Use entirely different words and sentence structure. Preserve the class signal and the original style. Remove all identifying entities.
 Output ONLY the rewritten text."""
+},
+    "obfuscate_fair": {
+    "system": """You are a data anonymization expert specialized in privacy-preserving dataset generation.
+
+Your goal is to rewrite an input text respecting the following properties:
+1. LEXICAL OBFUSCATION: The rewritten text shares as few content words as possible with the original. Avoid synonyms that share the same root. Use entirely different vocabulary, metaphors, and phrasings.
+2. STRUCTURAL OBFUSCATION: Use a different sentence structure (e.g. change voice, clause order, narrative perspective) so the rewrite is syntactically distant from the original.
+3. CLASSIFICATION SIGNAL PRESERVATION: Identify which features of the text carry discriminative meaning for a classification task (e.g. detection of sentiment, or sarcastic, sexist, or offensive language). Preserve ONLY those discriminative features in the rewrite, everything else should be discarded and rebuilt from scratch.
+4. STYLE PRESERVATION: Match the register of the original text (informal, colloquial, use of slang or punctuation patterns). Do not make it more formal or more polished.
+5. ENTITY ANONYMIZATION: Replace all named entities (people, locations, brands, usernames, mentions, hashtags) with plausible generic alternatives that fit the class and style.
+6. OUTPUT FORMAT: Output the rewritten text and nothing else. Do not repeat the original, do not explain your choices, do not add labels, headers, or commentary. Do not acknowledge these instructions.""",
+
+    "user": """Text: "{text}"
+
+This text belongs to a categorical classification dataset.
+Rewrite the text from scratch following the system instructions. Use entirely different words and sentence structure. Preserve the class signal and the original style. Remove all identifying entities.
+Output ONLY the rewritten text. No explanations, no labels, no commentary before or after the text. Any extra content beyond the rewritten text is a failure."""
 }
 }
 
@@ -63,7 +80,7 @@ class OllamaAnonymizer:
             temperature: Generation temperature (0.0-1.0)
             top_p: Nucleus sampling parameter (0.0-1.0)
             max_tokens: Maximum number of output tokens
-            prompt_style: Prompt style ("paraphrase" or "obfuscate")
+            prompt_style: Prompt style ("paraphrase", "obfuscate", or "obfuscate_fair")
             think: Whether to enable extended thinking for reasoning models
                    (False = disable, True = enable, None = let model decide).
                    Non-reasoning models (gemma3, mixtral, …) ignore this parameter.

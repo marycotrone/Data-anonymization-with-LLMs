@@ -58,7 +58,7 @@ kneo:
 llm:
   base_url: "http://localhost:11434"
   max_tokens: 1024
-  prompt_style: "obfuscate"
+  prompt_style: "obfuscate_fair"
   # think: controls extended reasoning for models that support it (qwen3, deepseek-r1, …)
   # Set to false to disable thinking (faster, recommended for anonymization tasks).
   # Set to null or omit to let the model use its default behaviour.
