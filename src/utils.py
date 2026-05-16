@@ -112,13 +112,19 @@ def load_dataset(
         raise FileNotFoundError(f"Dataset not found: {file_path}")
     
     df = pd.read_csv(file_path)
-    
+
+    # Drop rows with missing text or label
+    n_before = len(df)
+    df = df.dropna(subset=[text_column, label_column]).reset_index(drop=True)
+    if len(df) < n_before:
+        print(f"  Warning: dropped {n_before - len(df)} rows with NaN in '{text_column}' or '{label_column}'")
+
     if sample_size is not None:
         df = df.head(sample_size)
-    
+
     texts = df[text_column].tolist()
     labels = df[label_column].tolist()
-    
+
     return texts, labels
 
 

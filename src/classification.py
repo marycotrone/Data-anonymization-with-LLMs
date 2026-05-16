@@ -67,13 +67,21 @@ def get_device():
 
 
 def load_test_set(data_dir, filename, text_col, label_col):
-    """Load test set from CSV file."""
+    """Load test set from CSV file, skipping rows with missing text or label."""
     path = os.path.join(data_dir, filename)
     texts, labels = [], []
+    skipped = 0
     with open(path, 'r', encoding='utf-8') as f:
         for row in csv.DictReader(f):
-            texts.append(row[text_col])
-            labels.append(row[label_col])
+            text  = row.get(text_col, '')
+            label = row.get(label_col, '')
+            if not text or not label or text.strip() == '' or text == 'nan':
+                skipped += 1
+                continue
+            texts.append(text)
+            labels.append(label)
+    if skipped:
+        print(f"  Warning: skipped {skipped} rows with missing text or label in {filename}")
     print(f"Test set loaded: {len(texts)} samples from {path}")
     return texts, labels
 
